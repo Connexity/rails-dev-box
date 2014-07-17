@@ -3,7 +3,12 @@
 Vagrant.configure('2') do |config|
   config.vm.box      = 'precise32'
   config.vm.box_url  = 'http://files.vagrantup.com/precise32.box'
-  config.vm.hostname = 'rails-dev-box'
+  config.vm.hostname = 'ccg-dev-box'
+
+  config.vm.provider "virtualbox" do |v|
+     v.memory = 3072
+     v.cpus = 3
+  end
 
   config.vm.provider 'vmware_fusion' do |v, override|
     override.vm.box     = 'precise64'
@@ -18,7 +23,9 @@ Vagrant.configure('2') do |config|
     v.customize ['set', :id, '--on-window-close', 'keep-running']
   end
 
-  config.vm.network :forwarded_port, guest: 3000, host: 3000
+  config.vm.network :forwarded_port, guest: 8081, host: 3000
+  config.vm.network :forwarded_port, guest: 8080, host: 8080
+  config.vm.network :forwarded_port, guest: 5432, host: 5431
 
   config.vm.provision :puppet do |puppet|
     puppet.manifests_path = 'puppet/manifests'

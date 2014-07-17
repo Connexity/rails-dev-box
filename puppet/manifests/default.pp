@@ -1,10 +1,10 @@
-$ar_databases = ['activerecord_unittest', 'activerecord_unittest2']
+$ar_databases = ['dev', 'test', 'prod', 'stag']
 $as_vagrant   = 'sudo -u vagrant -H bash -l -c'
 $home         = '/home/vagrant'
 
 # Pick a Ruby version modern enough, that works in the currently supported Rails
 # versions, and for which RVM provides binaries.
-$ruby_version = '2.1.1'
+$ruby_version = 'ruby-1.9.2-p180'
 
 Exec {
   path => ['/usr/sbin', '/usr/bin', '/sbin', '/bin']
@@ -31,37 +31,6 @@ package { ['sqlite3', 'libsqlite3-dev']:
   ensure => installed;
 }
 
-# --- MySQL --------------------------------------------------------------------
-
-class install_mysql {
-  class { 'mysql': }
-
-  class { 'mysql::server':
-    config_hash => { 'root_password' => '' }
-  }
-
-  database { $ar_databases:
-    ensure  => present,
-    charset => 'utf8',
-    require => Class['mysql::server']
-  }
-
-  database_user { 'rails@localhost':
-    ensure  => present,
-    require => Class['mysql::server']
-  }
-
-  database_grant { ['rails@localhost/activerecord_unittest', 'rails@localhost/activerecord_unittest2', 'rails@localhost/inexistent_activerecord_unittest']:
-    privileges => ['all'],
-    require    => Database_user['rails@localhost']
-  }
-
-  package { 'libmysqlclient15-dev':
-    ensure => installed
-  }
-}
-class { 'install_mysql': }
-
 # --- PostgreSQL ---------------------------------------------------------------
 
 class install_postgres {
@@ -81,6 +50,12 @@ class install_postgres {
   }
 
   pg_user { 'vagrant':
+    ensure    => present,
+    superuser => true,
+    require   => Class['postgresql::server']
+  }
+
+  pg_user { 'postgres':
     ensure    => present,
     superuser => true,
     require   => Class['postgresql::server']
@@ -125,6 +100,29 @@ package { 'nodejs':
   ensure => installed
 }
 
+package {'qt4-dev-tools':
+  ensure => installed
+}
+
+package {'libqt4-dev':
+  ensure => installed
+} 
+
+package {'libqt4-core':
+  ensure => installed
+}
+
+package {'libqt4-gui':
+  ensure => installed
+}
+
+package {'imagemagick':
+  ensure => installed
+}
+
+package {'libmagickwand-dev':
+  ensure => installed
+}
 # --- Ruby ---------------------------------------------------------------------
 
 exec { 'install_rvm':
